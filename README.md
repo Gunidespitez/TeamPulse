@@ -76,6 +76,7 @@ Collections: users, teams, tasks
 /users/{userId} → User profiles + workload
 /teams/{teamId} → Team configs + members  
 /tasks/{userId} → Individual task lists
+
 **## 👥 Team Members**
 - Anvita Dey
 - Gunisha Kaur
