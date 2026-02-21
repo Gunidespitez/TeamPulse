@@ -1,9 +1,9 @@
 # TeamPulse - AI Student Workload & Team Finder
 
-## 🎯 Project Description
+## Project Description
 TeamPulse is a full-stack student platform that **prevents burnout** by tracking workload (🟢🟡🟠🔴), **matching teammates** (college + skills + availability), and **AI coaching** ("Drop ML - overload risk!"). Hackathon-ready MVP!
 
-**## 🛠️ Tech Stack (12 Technologies)**
+**## Tech Stack (12 Technologies)**
 **Frontend:** HTML5/CSS3/Vanilla JS (ES6+)  
 **Backend:** Firebase Firestore v10 + Auth  
 **AI/ML:** Google Gemini 1.5 Flash API  
@@ -13,7 +13,7 @@ TeamPulse is a full-stack student platform that **prevents burnout** by tracking
 **Responsive:** CSS Grid/Flexbox (Mobile-first)  
 **Storage:** 1MB/doc limit optimized
 
-**## ✨ Features (9 Core + Polish)**
+**## Features (9 Core + Polish)**
 - **Firebase Auth** - Email signup/login (Task 2)
 - **Profile Mgmt** - Skills/college/workload (Task 3)  
 - **Smart Matching** - Same college + skills + 🟢🟡 (Task 4)
@@ -24,14 +24,18 @@ TeamPulse is a full-stack student platform that **prevents burnout** by tracking
 - **Mobile Responsive** - Perfect iPhone/Android UX
 - **Firestore Structure** - users/{uid}/ + teams/{teamId}/
 
-**## 🚀 Installation (2 Minutes)**
-```bash
+**## Installation (2 Minutes)**
+
 1. console.firebase.google.com → New project → Enable Auth/Firestore
 2. Copy config → Paste in index.html <script>
 3. makersuite.google.com/app/apikey → Gemini key → Paste GEMINI_API_KEY
 4. Live Server / python -m http.server 8000
 5. firebase deploy → Live URL!
-## 🛠️ API Documentation
+
+**##  System Architecture**
+![Architecture Flowchart](flowchart.jpg)
+
+**##  API Documentation** 
 Firebase Authentication API v10.12.2
 Used For: User login/signup, session management
 Key Methods:
@@ -55,15 +59,15 @@ onSnapshot() for live updates
 collection(), doc(), addDoc()
 Collections: users, teams, tasks
 
-Data structures:
+**##Data structures:**
 /users/{userId} → User profiles + workload
 /teams/{teamId} → Team configs + members  
 /tasks/{userId} → Individual task lists
-## 👥 Team Members
-👩‍💻 Anvita Dey
-👩‍💻 Gunisha Kaur
+**## 👥 Team Members**
+- Anvita Dey
+- Gunisha Kaur
 
-## 📄 License
+**## 📄 License**
 TeamPulse
 © 2026 Anvita Dey & Gunisha Kaur
 Licensed under MIT License
