@@ -33,7 +33,8 @@ Storage: 1MB/doc limit optimized
 4. Live Server / python -m http.server 8000
 5. firebase deploy → Live URL!
 
-### 🛠️ API Documentation
+## 🛠️ API Documentation
+```bash
 
 **Firebase Authentication API v10.12.2**  
 **Used For:** User login/signup, session management  
