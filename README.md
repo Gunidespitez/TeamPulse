@@ -31,9 +31,10 @@ TeamPulse is a full-stack student platform that **prevents burnout** by tracking
 3. makersuite.google.com/app/apikey → Gemini key → Paste GEMINI_API_KEY
 4. Live Server / python -m http.server 8000
 5. firebase deploy → Live URL!
+6. 
+**## 🗺️ System Architecture**
+![Architecture Flowchart](https://raw.githubusercontent.com/Gunidespitez/TeamPulse/main/flowchart.jpg)
 
-**##  System Architecture**
-![Architecture Flowchart](flowchart.jpg)
 
 **##  API Documentation** 
 Firebase Authentication API v10.12.2
