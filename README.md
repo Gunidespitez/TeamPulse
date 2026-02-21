@@ -32,13 +32,9 @@ TeamPulse is a full-stack student platform that **prevents burnout** by tracking
 4. Live Server / python -m http.server 8000
 5. firebase deploy → Live URL!
 
-**##Screenshots of out website**
+**##Screenshots**
 **Dashboard Overview**
 ![homepage](https://raw.githubusercontent.com/Gunidespitez/TeamPulse/main/homepage.jpeg)
-
-
-**## 🗺️ System Architecture**
-![Architecture Flowchart](https://raw.githubusercontent.com/Gunidespitez/TeamPulse/main/flowchart.jpeg)
 **Team making**  
 ![teams](https://raw.githubusercontent.com/Gunidespitez/TeamPulse/main/teams.jpeg)
 **Team Heatmap Analysis**  
@@ -47,6 +43,9 @@ TeamPulse is a full-stack student platform that **prevents burnout** by tracking
 ![connecting](https://raw.githubusercontent.com/Gunidespitez/TeamPulse/main/connecting.jpeg)
 **AI Coach Chat**  
 ![chatbot](https://raw.githubusercontent.com/Gunidespitez/TeamPulse/main/chatbot.jpeg)
+
+**## 🗺️ System Architecture**
+![Architecture Flowchart](https://raw.githubusercontent.com/Gunidespitez/TeamPulse/main/flowchart.jpeg)
 
 
 **##  API Documentation** 
