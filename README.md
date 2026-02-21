@@ -1,48 +1,6 @@
-# 🚀 TeamPulse
+# TeamPulse - AI Workload & Team Matcher
 
-TeamPulse is a collaborative project designed to enhance team coordination and workflow visibility.
+## Project Description
+TeamPulse prevents student burnout with real-time workload tracking, AI coaching, and smart teammate matching by college/skills/availability. Full-stack hackathon MVP!
 
-This repository contains the initial frontend foundation of the project.
-
----
-
-## 📌 Project Overview
-
-TeamPulse aims to:
-
-- Improve team collaboration
-- Track project progress
-- Maintain structured commit history
-- Build a scalable frontend system
-
----
-
-## 🛠 Tech Stack
-
-- HTML5
-- Git & GitHub
-
----
-
-## 📂 Project Structure
-
-TeamPulse/
-│
-├── frontend.html
-└── README.md
-
----
-
-## 👥 Contributors
-
-- AnvitaDey
-- Gunidespitez
-
----
-
-## 📈 Future Plans
-
-- Add CSS styling
-- Add JavaScript functionality
-- Backend integration
-- AI-based collaboration features
+## Tech Stack (10+)
