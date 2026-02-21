@@ -31,3 +31,41 @@ TeamPulse is a full-stack student platform that **prevents burnout** by tracking
 3. makersuite.google.com/app/apikey → Gemini key → Paste GEMINI_API_KEY
 4. Live Server / python -m http.server 8000
 5. firebase deploy → Live URL!
+
+**## 🛠️ API Documentation**
+
+**Firebase Authentication API v10.12.2**  
+**Used For:** User login/signup, session management  
+**Key Methods:**
+- `signInWithEmailAndPassword(email, password)`
+- `createUserWithEmailAndPassword(email, password)` 
+- `onAuthStateChanged(callback)`
+- `signOut()`
+
+**Firebase Firestore API v10.12.2**  
+**Used For:** Real-time team data sync, task storage, heatmap generation  
+**Key Methods:**
+- `getDoc()`, `setDoc()`, `updateDoc()`
+- `onSnapshot()` for live updates
+- `collection()`, `doc()`, `addDoc()`  
+**Collections:** `users`, `teams`, `tasks`
+
+**Data Structure:**
+/users/{userId} → User profiles + workload
+/teams/{teamId} → Team configs + members
+/tasks/{userId} → Individual task lists
+
+
+**## 👥 Team Members **
+**👩‍💻 Anvita Dey**  
+**👩‍💻 Gunisha Kaur**
+
+**## 📄 License**
+**TeamPulse**  
+© 2026 Anvita Dey & Gunisha Kaur  
+**Licensed under MIT License**
+
+**Permissions:** Commercial use, modification, distribution, private use  
+**Conditions:** Include copyright notice in copies  
+**Limitations:** No liability, no warranty
+
