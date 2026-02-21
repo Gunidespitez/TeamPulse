@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TeamPulse — See the crash before it happens</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c28;
+    --border: #2a2a3d;
+    --accent: #ff4d6d;
+    --accent2: #4dffb4;
+    --warn: #ffb347;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-display);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.25;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .container {
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 48px 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .container-wide {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade { animation: fadeUp 0.5s ease both; }
+
+  /* ── LOGO ── */
+  .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+
+  .logo-dot {
+    width: 12px; height: 12px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 16px var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%     { opacity:0.5; transform:scale(0.75); }
+  }
+
+  .logo-text { font-size: 26px; font-weight: 800; }
+  .logo-text span { color: var(--accent); }
+
+  .tagline {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 48px;
+  }
+
+  /* ── CARDS ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 20px;
+  }
+
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+
+  .section-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(255,77,109,0.1);
+    border: 1px solid rgba(255,77,109,0.3);
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.1em;
+  }
+
+  .section-title { font-size: 17px; font-weight: 700; }
+
+  /* ── FORM ── */
+  label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 7px;
+  }
+
+  input, select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-display);
+    font-size: 14px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6b8a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+    cursor: pointer;
+  }
+
+  select option { background: #1c1c28; }
+
+  input:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255,77,109,0.1);
+  }
+
+  input::placeholder { color: var(--muted); }
+
+  .field { margin-bottom: 16px; }
+
+  /* ── MEMBERS ── */
+  #members-list { margin-bottom: 14px; }
+
+  .member-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+
+  .member-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .member-name-row { display: flex; align-items: center; gap: 10px; }
+
+  .member-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0;
+  }
+
+  .color-0 { background:rgba(255,77,109,0.2); color:#ff4d6d; }
+  .color-1 { background:rgba(77,255,180,0.2); color:#4dffb4; }
+  .color-2 { background:rgba(255,179,71,0.2); color:#ffb347; }
+  .color-3 { background:rgba(147,112,219,0.2); color:#9370db; }
+  .color-4 { background:rgba(64,224,208,0.2); color:#40e0d0; }
+
+  .dot-0{background:#ff4d6d;} .dot-1{background:#4dffb4;}
+  .dot-2{background:#ffb347;} .dot-3{background:#9370db;} .dot-4{background:#40e0d0;}
+
+  .mc-0{background:linear-gradient(90deg,#ff4d6d,#ff8c6d);}
+  .mc-1{background:linear-gradient(90deg,#4dffb4,#4dcfff);}
+  .mc-2{background:linear-gradient(90deg,#ffb347,#ffd347);}
+  .mc-3{background:linear-gradient(90deg,#9370db,#c370db);}
+  .mc-4{background:linear-gradient(90deg,#40e0d0,#40b0e0);}
+
+  .name-input {
+    background: transparent !important;
+    border: none !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    padding: 0 !important;
+    width: 200px;
+    box-shadow: none !important;
+  }
+
+  .capacity-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px; padding: 8px 12px;
+    background: rgba(77,255,180,0.05);
+    border: 1px solid rgba(77,255,180,0.15);
+    border-radius: 8px;
+  }
+  .capacity-row label { margin:0; color:var(--accent2); font-size:10px; white-space:nowrap; }
+  .capacity-row input { width:70px; padding:6px 10px; font-size:13px; text-align:center; border-color:rgba(77,255,180,0.2); }
+
+  .task-headers {
+    display: grid;
+    grid-template-columns: 2fr 130px 110px 110px 28px;
+    gap: 8px; margin-bottom: 6px;
+  }
+  .task-headers label { margin:0; font-size:10px; }
+
+  .tasks-list { margin-bottom: 8px; }
+
+  .task-row {
+    display: grid;
+    grid-template-columns: 2fr 130px 110px 110px 28px;
+    gap: 8px; margin-bottom: 8px; align-items: center;
+  }
+  .task-row input, .task-row select { font-size:13px; padding:8px 10px; }
+
+  /* ── BUTTONS ── */
+  .btn-icon {
+    background:transparent; color:var(--muted); border:none;
+    padding:4px; font-size:15px; cursor:pointer; border-radius:4px;
+    transition:all 0.2s; display:flex; align-items:center; justify-content:center;
+  }
+  .btn-icon:hover { color:var(--accent); background:rgba(255,77,109,0.1); }
+
+  .btn-ghost {
+    background:transparent; color:var(--muted);
+    border:1px dashed var(--border); width:100%; padding:9px;
+    font-size:12px; font-family:var(--font-display); font-weight:600;
+    border-radius:8px; cursor:pointer; transition:all 0.2s;
+  }
+  .btn-ghost:hover { border-color:var(--accent2); color:var(--accent2); }
+
+  .btn-add-member {
+    background:transparent; border:1px dashed var(--border);
+    color:var(--accent2); font-family:var(--font-display);
+    font-size:14px; font-weight:600; padding:14px; border-radius:12px;
+    cursor:pointer; width:100%; transition:all 0.2s;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .btn-add-member:hover { border-color:var(--accent2); background:rgba(77,255,180,0.05); }
+
+  .btn-generate {
+    width:100%; padding:18px; font-size:16px; border-radius:12px;
+    background:linear-gradient(135deg,var(--accent),#ff8c42);
+    color:white; border:none; font-family:var(--font-display);
+    font-weight:800; cursor:pointer; transition:all 0.3s; margin-top:28px;
+  }
+  .btn-generate:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(255,77,109,0.4); }
+
+  .demo-hint {
+    text-align:center; margin-top:12px;
+    font-family:var(--font-mono); font-size:11px; color:var(--muted);
+  }
+  .demo-hint a { color:var(--accent2); text-decoration:none; cursor:pointer; }
+  .demo-hint a:hover { text-decoration:underline; }
+
+  /* ── HEATMAP PAGE ── */
+  .topbar {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:36px;
+  }
+
+  .back-btn {
+    background:var(--surface); border:1px solid var(--border);
+    color:var(--muted); font-family:var(--font-mono); font-size:11px;
+    padding:8px 16px; border-radius:6px; cursor:pointer;
+    transition:all 0.2s; letter-spacing:0.05em;
+    border: 1px solid var(--border);
+  }
+  .back-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  .team-subtitle { font-family:var(--font-mono); font-size:11px; color:var(--muted); margin-top:4px; }
+
+  /* Stats */
+  .stats-row {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:14px; margin-bottom:24px;
+  }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px; }
+  .stat-label { font-family:var(--font-mono); font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px; }
+  .stat-value { font-size:28px; font-weight:800; line-height:1; }
+  .stat-sub { font-family:var(--font-mono); font-size:10px; color:var(--muted); margin-top:4px; }
+  .red    { color:var(--accent); }
+  .yellow { color:var(--warn);   }
+  .green  { color:var(--accent2);}
+
+  /* Heatmap card */
+  .hcard {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:26px; margin-bottom:20px; overflow-x:auto;
+  }
+  .card-title { font-size:16px; font-weight:700; margin-bottom:18px; display:flex; align-items:center; gap:10px; }
+  .live-badge {
+    font-family:var(--font-mono); font-size:10px;
+    background:rgba(255,77,109,0.1); border:1px solid rgba(255,77,109,0.3);
+    color:var(--accent); padding:2px 8px; border-radius:4px; letter-spacing:0.08em;
+    animation: badgePulse 2s infinite;
+  }
+  @keyframes badgePulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+
+  /* Table */
+  .heatmap-table { width:100%; border-collapse:separate; border-spacing:4px; min-width:650px; }
+  .heatmap-table th {
+    font-family:var(--font-mono); font-size:10px; color:var(--muted);
+    text-align:center; padding:4px 2px; white-space:nowrap; font-weight:400;
+  }
+  .heatmap-table th.today-col { color:var(--accent2); }
+  td.member-label { font-size:13px; font-weight:600; padding:4px 14px 4px 0; white-space:nowrap; min-width:85px; }
+  .member-label-inner { display:flex; align-items:center; gap:8px; }
+  .member-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+  .heatmap-cell {
+    height:32px; min-width:32px; border-radius:5px;
+    cursor:pointer; transition:transform 0.15s,filter 0.15s; position:relative;
+  }
+  .heatmap-cell:hover { transform:scale(1.2); filter:brightness(1.3); z-index:10; }
+
+  .cell-empty     { background:var(--surface2); }
+  .cell-green     { background:rgba(77,255,180,0.28); }
+  .cell-yellow    { background:rgba(255,179,71,0.50); }
+  .cell-orange    { background:rgba(255,140,66,0.65); }
+  .cell-red       { background:rgba(255,77,109,0.55); }
+  .cell-collision {
+    background:rgba(255,77,109,0.9);
+    animation:collisionPulse 1.4s ease-in-out infinite;
+    box-shadow:0 0 12px rgba(255,77,109,0.6);
+  }
+  @keyframes collisionPulse {
+    0%,100%{ background:rgba(255,77,109,0.9); box-shadow:0 0 8px rgba(255,77,109,0.4); }
+    50%    { background:rgba(255,77,109,1);   box-shadow:0 0 22px rgba(255,77,109,0.9); }
+  }
+
+  .legend { display:flex; gap:18px; margin-top:16px; flex-wrap:wrap; }
+  .legend-item { display:flex; align-items:center; gap:7px; font-family:var(--font-mono); font-size:10px; color:var(--muted); }
+  .legend-dot { width:14px; height:14px; border-radius:3px; }
+
+  /* Tooltip */
+  .tooltip {
+    position:fixed; background:var(--surface2); border:1px solid var(--border);
+    border-radius:10px; padding:14px 16px; font-size:12px; pointer-events:none;
+    z-index:9999; max-width:220px; display:none; box-shadow:0 8px 32px rgba(0,0,0,0.6);
+  }
+  .tt-name  { font-weight:700; margin-bottom:3px; font-size:13px; }
+  .tt-date  { font-family:var(--font-mono); font-size:10px; color:var(--muted); margin-bottom:8px; }
+  .tt-task  { font-family:var(--font-mono); font-size:11px; color:var(--muted); padding:2px 0; }
+  .tt-load  { margin-top:8px; font-weight:700; font-family:var(--font-mono); font-size:11px; }
+  .tt-clash { margin-top:5px; font-family:var(--font-mono); font-size:10px; color:var(--accent); }
+
+  /* Workload bars */
+  .workload-row { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+  .workload-name { font-size:14px; font-weight:600; width:80px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .workload-bar-wrap { flex:1; height:10px; background:var(--surface2); border-radius:999px; overflow:hidden; }
+  .workload-bar { height:100%; border-radius:999px; width:0%; transition:width 1.2s cubic-bezier(0.4,0,0.2,1); }
+  .workload-pct { font-family:var(--font-mono); font-size:12px; color:var(--muted); width:42px; text-align:right; flex-shrink:0; }
+  .workload-tag { font-family:var(--font-mono); font-size:10px; padding:3px 8px; border-radius:4px; letter-spacing:0.05em; flex-shrink:0; }
+  .tag-red    { background:rgba(255,77,109,0.15);  color:var(--accent);  border:1px solid rgba(255,77,109,0.3); }
+  .tag-yellow { background:rgba(255,179,71,0.15);  color:var(--warn);    border:1px solid rgba(255,179,71,0.3); }
+  .tag-green  { background:rgba(77,255,180,0.15);  color:var(--accent2); border:1px solid rgba(77,255,180,0.3); }
+
+  /* AI */
+  .ai-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:26px; position:relative; overflow:hidden;
+  }
+  .ai-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+  }
+  .ai-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(77,255,180,0.1); border:1px solid rgba(77,255,180,0.3);
+    color:var(--accent2); font-family:var(--font-mono); font-size:10px;
+    padding:4px 10px; border-radius:4px; margin-bottom:18px; letter-spacing:0.08em;
+  }
+  .ai-dot { width:6px; height:6px; background:var(--accent2); border-radius:50%; animation:pulse 1.5s infinite; }
+  .rec-item { display:flex; gap:14px; padding:14px 0; border-bottom:1px solid var(--border); }
+  .rec-item:last-child { border-bottom:none; padding-bottom:0; }
+  .rec-icon { font-size:20px; flex-shrink:0; margin-top:2px; }
+  .rec-person { font-family:var(--font-mono); font-size:10px; color:var(--accent); margin-bottom:4px; letter-spacing:0.05em; text-transform:uppercase; }
+  .rec-text { font-size:14px; color:var(--text); line-height:1.55; }
+
+  .ai-loading { display:flex; align-items:center; gap:12px; color:var(--muted); font-family:var(--font-mono); font-size:13px; padding:16px 0; }
+  .spinner { width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--accent2); border-radius:50%; animation:spin 0.8s linear infinite; flex-shrink:0; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  PAGE 1 — INPUT                                -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="page-input" class="page active">
+  <div class="container">
+
+    <div class="fade" style="margin-bottom:48px">
+      <div class="logo">
+        <div class="logo-dot"></div>
+        <div class="logo-text">Team<span>Pulse</span></div>
+      </div>
+      <div class="tagline">// See the crash before it happens</div>
+    </div>
+
+    <div class="section fade">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <span class="section-title">Team Setup</span>
+      </div>
+      <div class="field">
+        <label>Team Name</label>
+        <input type="text" id="team-name" placeholder="e.g. TinkHerHack Squad"/>
+      </div>
+    </div>
+
+    <div class="section fade">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <span class="section-title">Members & Tasks</span>
+      </div>
+      <div id="members-list"></div>
+      <button class="btn-add-member" onclick="addMember()">+ Add Team Member</button>
+    </div>
+
+    <button class="btn-generate" onclick="generateHeatmap()">⚡ Generate Conflict Heatmap</button>
+    <div class="demo-hint">
+      First time? <a onclick="loadDemoData()">Load demo team data</a> to see it in action.
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  PAGE 2 — HEATMAP                              -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="page-heatmap" class="page">
+
+  <!-- Tooltip -->
+  <div class="tooltip" id="tooltip">
+    <div class="tt-name" id="tt-name"></div>
+    <div class="tt-date" id="tt-date"></div>
+    <div id="tt-tasks"></div>
+    <div class="tt-load"  id="tt-load"></div>
+    <div class="tt-clash" id="tt-clash"></div>
+  </div>
+
+  <div class="container-wide">
+
+    <div class="topbar fade">
+      <div>
+        <div class="logo">
+          <div class="logo-dot"></div>
+          <div class="logo-text">Team<span>Pulse</span></div>
+        </div>
+        <div class="team-subtitle" id="team-subtitle"></div>
+      </div>
+      <button class="back-btn" onclick="showPage('input')">← Edit Team</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row fade">
+      <div class="stat-card">
+        <div class="stat-label">Collision Zones</div>
+        <div class="stat-value red" id="stat-collisions">—</div>
+        <div class="stat-sub">deadline clashes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Most Overloaded</div>
+        <div class="stat-value yellow" id="stat-person">—</div>
+        <div class="stat-sub">this week</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Team Risk</div>
+        <div class="stat-value" id="stat-risk">—</div>
+        <div class="stat-sub">overall load</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Members</div>
+        <div class="stat-value green" id="stat-members">—</div>
+        <div class="stat-sub">tracked × 14 days</div>
+      </div>
+    </div>
+
+    <!-- Heatmap -->
+    <div class="hcard fade">
+      <div class="card-title">14-Day Conflict Heatmap <span class="live-badge">LIVE</span></div>
+      <div id="heatmap-wrap"></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(77,255,180,0.35)"></div>Manageable</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(255,179,71,0.55)"></div>Heavy</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(255,140,66,0.7)"></div>Overloaded</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ff4d6d;box-shadow:0 0 8px rgba(255,77,109,0.6)"></div>⚡ Collision</div>
+      </div>
+    </div>
+
+    <!-- Workload bars -->
+    <div class="hcard fade">
+      <div class="card-title">Team Workload Distribution</div>
+      <div id="workload-bars"></div>
+    </div>
+
+    <!-- AI -->
+    <div class="ai-card fade">
+      <div class="ai-badge"><div class="ai-dot"></div>PULSE RECOMMENDATIONS</div>
+      <div id="ai-recs">
+        <div class="ai-loading"><div class="spinner"></div>Analysing with AI...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  JAVASCRIPT                                    -->
+<!-- ═══════════════════════════════════════════════ -->
+<script>
+// ── PAGE SWITCHER ─────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ── ALGORITHM CONSTANTS ───────────────────────────────────────
+const DIFF_MAP  = { Easy:3, Medium:6, Hard:10, Extreme:15 };
+const TYPE_MULT = { Assignment:1.0, Test:1.2, Project:1.5, Club:0.8 };
+function effort(d, t) { return (DIFF_MAP[d]||0) * (TYPE_MULT[t]||1.0); }
+
+// ── INPUT PAGE ────────────────────────────────────────────────
+let memberCount = 0, taskCount = 0;
+const COLORS = ['color-0','color-1','color-2','color-3','color-4'];
+
+function addMember(name='', capacity=40) {
+  const idx = memberCount++;
+  const cc = COLORS[idx % 5];
+  const init = name ? name[0].toUpperCase() : '?';
+  const div = document.createElement('div');
+  div.className = 'member-card';
+  div.id = `member-${idx}`;
+  div.innerHTML = `
+    <div class="member-card-header">
+      <div class="member-name-row">
+        <div class="member-avatar ${cc}" id="av-${idx}">${init}</div>
+        <input class="name-input" id="mn-${idx}" placeholder="Member name" value="${name}" oninput="updateAv(${idx})"/>
+      </div>
+      <button class="btn-icon" onclick="removeMember(${idx})">✕</button>
+    </div>
+    <div class="capacity-row">
+      <label>Weekly Capacity</label>
+      <input type="number" id="cap-${idx}" value="${capacity}" min="1" max="168"/>
+      <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">hrs available</span>
+    </div>
+    <div class="task-headers">
+      <label>Task Name</label><label>Deadline</label><label>Difficulty</label><label>Type</label><div></div>
+    </div>
+    <div class="tasks-list" id="tasks-${idx}"></div>
+    <button class="btn-ghost" onclick="addTask(${idx})">+ Add Task</button>`;
+  document.getElementById('members-list').appendChild(div);
+  addTask(idx);
+  if(name) updateAv(idx);
+}
+
+function updateAv(idx) {
+  const v = document.getElementById(`mn-${idx}`).value;
+  document.getElementById(`av-${idx}`).textContent = v ? v[0].toUpperCase() : '?';
+}
+
+function removeMember(idx) {
+  const el = document.getElementById(`member-${idx}`);
+  if(el) el.remove();
+}
+
+function addTask(mi, tn='', dl='', diff='Medium', typ='Assignment') {
+  const tid = taskCount++;
+  const today = new Date();
+  const defDl = dl || new Date(today.getTime()+7*86400000).toISOString().split('T')[0];
+  const row = document.createElement('div');
+  row.className = 'task-row'; row.id = `task-${tid}`;
+  row.innerHTML = `
+    <input type="text" placeholder="e.g. UI Design" value="${tn}"/>
+    <input type="date" value="${defDl}"/>
+    <select>
+      <option value="Easy"    ${diff==='Easy'   ?'selected':''}>🟢 Easy</option>
+      <option value="Medium"  ${diff==='Medium' ?'selected':''}>🟡 Medium</option>
+      <option value="Hard"    ${diff==='Hard'   ?'selected':''}>🟠 Hard</option>
+      <option value="Extreme" ${diff==='Extreme'?'selected':''}>🔴 Extreme</option>
+    </select>
+    <select>
+      <option value="Assignment" ${typ==='Assignment'?'selected':''}>📝 Assignment</option>
+      <option value="Test"       ${typ==='Test'      ?'selected':''}>📊 Test</option>
+      <option value="Project"    ${typ==='Project'   ?'selected':''}>🚀 Project</option>
+      <option value="Club"       ${typ==='Club'      ?'selected':''}>🎯 Club</option>
+    </select>
+    <button class="btn-icon" onclick="removeTask(${tid})">✕</button>`;
+  document.getElementById(`tasks-${mi}`).appendChild(row);
+}
+
+function removeTask(tid) {
+  const el = document.getElementById(`task-${tid}`);
+  if(el) el.remove();
+}
+
+function collectData() {
+  const teamName = document.getElementById('team-name').value || 'My Team';
+  const members = [];
+  document.querySelectorAll('.member-card').forEach((card,i) => {
+    const id = card.id.replace('member-','');
+    const name = document.getElementById(`mn-${id}`)?.value || `Member ${i+1}`;
+    const capacity = parseFloat(document.getElementById(`cap-${id}`)?.value) || 40;
+    const tasks = [];
+    card.querySelectorAll('.task-row').forEach(row => {
+      const ins = row.querySelectorAll('input');
+      const sels = row.querySelectorAll('select');
+      const tn = ins[0].value, dl = ins[1].value;
+      const diff = sels[0].value, typ = sels[1].value;
+      if(tn && dl) tasks.push({ name:tn, deadline:dl, difficulty:diff, type:typ });
+    });
+    if(name) members.push({ name, capacity, tasks, colorIdx: i%5 });
+  });
+  return { teamName, members };
+}
+
+function generateHeatmap() {
+  const data = collectData();
+  if(!data.members.length) { alert('Add at least one member with tasks!'); return; }
+  buildHeatmapPage(data);
+  showPage('heatmap');
+}
+
+function loadDemoData() {
+  document.getElementById('team-name').value = 'TinkHerHack Squad';
+  document.getElementById('members-list').innerHTML = '';
+  memberCount = 0; taskCount = 0;
+  const today = new Date();
+  const d = n => new Date(today.getTime()+n*86400000).toISOString().split('T')[0];
+  const demo = [
+    { name:'Aisha', capacity:40, tasks:[
+      {name:'UI Prototype',   deadline:d(3), difficulty:'Hard',    type:'Project'},
+      {name:'User Testing',   deadline:d(4), difficulty:'Medium',  type:'Assignment'},
+      {name:'Pitch Deck',     deadline:d(3), difficulty:'Extreme', type:'Project'}]},
+    { name:'Priya', capacity:35, tasks:[
+      {name:'Backend API',    deadline:d(4), difficulty:'Hard',    type:'Project'},
+      {name:'DB Schema',      deadline:d(2), difficulty:'Medium',  type:'Assignment'}]},
+    { name:'Riya',  capacity:45, tasks:[
+      {name:'Market Research',    deadline:d(6), difficulty:'Easy',    type:'Assignment'},
+      {name:'Competitor Analysis',deadline:d(3), difficulty:'Medium',  type:'Assignment'},
+      {name:'Financial Model',    deadline:d(5), difficulty:'Extreme', type:'Project'}]},
+    { name:'Sara',  capacity:30, tasks:[
+      {name:'Demo Video',   deadline:d(4), difficulty:'Hard', type:'Club'},
+      {name:'Social Media', deadline:d(7), difficulty:'Easy', type:'Club'}]}
+  ];
+  demo.forEach(m => {
+    addMember(m.name, m.capacity);
+    const idx = memberCount-1;
+    document.getElementById(`tasks-${idx}`).innerHTML = '';
+    m.tasks.forEach(t => addTask(idx, t.name, t.deadline, t.difficulty, t.type));
+  });
+}
+
+// ── HEATMAP PAGE ──────────────────────────────────────────────
+function buildHeatmapPage(data) {
+  const { teamName, members } = data;
+  document.getElementById('team-subtitle').textContent = teamName;
+  document.getElementById('stat-members').textContent = members.length;
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const days = Array.from({length:14},(_,i)=>{ const d=new Date(today); d.setDate(d.getDate()+i); return d; });
+
+  function fmtDay(d) { return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}); }
+  function dStr(d) { return d.toISOString().split('T')[0]; }
+
+  // Build matrix
+  const matrix = members.map(member =>
+    days.map(day => {
+      let score = 0;
+      const activeTasks = [];
+      member.tasks.forEach(task => {
+        const dl = new Date(task.deadline); dl.setHours(0,0,0,0);
+        const eff = effort(task.difficulty, task.type);
+        const taskStart = new Date(dl);
+        taskStart.setDate(taskStart.getDate() - Math.ceil(eff/5));
+        if(day <= dl && day >= taskStart) {
+          const daysLeft = Math.max(1, Math.ceil((dl-day)/86400000));
+          const daily = eff/daysLeft;
+          score += daily;
+          activeTasks.push({ name:task.name, difficulty:task.difficulty, type:task.type, deadline:task.deadline, daily:daily.toFixed(1) });
+        }
+      });
+      const nearDl = member.tasks.filter(t => {
+        const dl = new Date(t.deadline); dl.setHours(0,0,0,0);
+        return Math.abs(dl-day)/86400000 <= 2;
+      });
+      const isCollision = nearDl.length >= 2;
+      const ratio = score / (member.capacity/14);
+      let cellClass = 'cell-empty';
+      if(activeTasks.length) {
+        if(isCollision)      cellClass = 'cell-collision';
+        else if(ratio < 0.6) cellClass = 'cell-green';
+        else if(ratio < 1.0) cellClass = 'cell-yellow';
+        else if(ratio < 1.3) cellClass = 'cell-orange';
+        else                 cellClass = 'cell-red';
+      }
+      return { score, ratio, activeTasks, isCollision, nearDl, cellClass, day };
+    })
+  );
+
+  // Count collisions
+  let totalClash = 0;
+  matrix.forEach(r => r.forEach(c => { if(c.isCollision) totalClash++; }));
+  document.getElementById('stat-collisions').textContent = totalClash;
+
+  // Build table
+  const wrap = document.getElementById('heatmap-wrap');
+  const table = document.createElement('table');
+  table.className = 'heatmap-table';
+  const thead = document.createElement('thead');
+  const hrow = document.createElement('tr');
+  hrow.innerHTML = '<th style="text-align:left;padding-right:14px">Member</th>';
+  days.forEach((d,i) => {
+    const th = document.createElement('th');
+    th.textContent = fmtDay(d);
+    if(i===0) th.className = 'today-col';
+    hrow.appendChild(th);
+  });
+  thead.appendChild(hrow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  members.forEach((member,mi) => {
+    const tr = document.createElement('tr');
+    const nameTd = document.createElement('td');
+    nameTd.className = 'member-label';
+    nameTd.innerHTML = `<div class="member-label-inner"><div class="member-dot dot-${member.colorIdx||mi%5}"></div>${member.name}</div>`;
+    tr.appendChild(nameTd);
+    matrix[mi].forEach((cell,di) => {
+      const td = document.createElement('td');
+      td.className = `heatmap-cell ${cell.cellClass}`;
+      td.addEventListener('mouseenter', e => showTT(e,member,cell));
+      td.addEventListener('mousemove',  e => moveTT(e));
+      td.addEventListener('mouseleave', hideTT);
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  wrap.innerHTML = '';
+  wrap.appendChild(table);
+
+  // Workload bars
+  const loads = members.map(m => {
+    const total = m.tasks.reduce((s,t)=>s+effort(t.difficulty,t.type),0);
+    const ratio = total/(m.capacity||40);
+    return { name:m.name, total, ratio, colorIdx:m.colorIdx||0 };
+  });
+  const maxLoad = Math.max(...loads.map(l=>l.total),1);
+  const mostLoaded = loads.reduce((a,b)=>a.total>b.total?a:b);
+  document.getElementById('stat-person').textContent = mostLoaded.name;
+  const avgRatio = loads.reduce((s,l)=>s+l.ratio,0)/loads.length;
+  const riskEl = document.getElementById('stat-risk');
+  if(avgRatio<0.6)      { riskEl.textContent='LOW';      riskEl.className='stat-value green'; }
+  else if(avgRatio<1.0) { riskEl.textContent='MODERATE'; riskEl.className='stat-value yellow'; }
+  else                  { riskEl.textContent='HIGH';      riskEl.className='stat-value red'; }
+
+  const barsEl = document.getElementById('workload-bars');
+  barsEl.innerHTML = loads.map((l,i) => {
+    let tc='tag-green', tt='🟢 OK';
+    if(l.ratio>=1.0)      { tc='tag-red';    tt='🔴 High'; }
+    else if(l.ratio>=0.6) { tc='tag-yellow'; tt='🟡 Moderate'; }
+    return `<div class="workload-row">
+      <div class="workload-name">${l.name}</div>
+      <div class="workload-bar-wrap"><div class="workload-bar mc-${l.colorIdx}" id="bar-${i}" style="width:0%"></div></div>
+      <div class="workload-pct">${Math.round(l.total)}pts</div>
+      <div class="workload-tag ${tc}">${tt}</div>
+    </div>`;
+  }).join('');
+
+  setTimeout(() => {
+    loads.forEach((l,i) => {
+      const bar = document.getElementById(`bar-${i}`);
+      if(bar) bar.style.width = Math.round((l.total/maxLoad)*100)+'%';
+    });
+  }, 100);
+
+  // AI recommendations
+  getAI(members, matrix, days, dStr);
+}
+
+// ── TOOLTIP ───────────────────────────────────────────────────
+const tooltip = document.getElementById('tooltip');
+function showTT(e,member,cell) {
+  document.getElementById('tt-name').textContent = member.name;
+  document.getElementById('tt-date').textContent = cell.day.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+  const tasksEl = document.getElementById('tt-tasks');
+  tasksEl.innerHTML = cell.activeTasks.length
+    ? cell.activeTasks.map(t=>`<div class="tt-task">📌 ${t.name} <span style="color:var(--accent)">${t.difficulty}</span></div>`).join('')
+    : '<div class="tt-task">No active tasks</div>';
+  document.getElementById('tt-load').textContent = cell.activeTasks.length ? `Load: ${cell.score.toFixed(1)} pts` : '';
+  document.getElementById('tt-clash').textContent = cell.isCollision ? '⚡ COLLISION ZONE' : '';
+  tooltip.style.display = 'block';
+  moveTT(e);
+}
+function moveTT(e) {
+  tooltip.style.left = Math.min(e.clientX+16, window.innerWidth-240)+'px';
+  tooltip.style.top  = Math.min(e.clientY+16, window.innerHeight-200)+'px';
+}
+function hideTT() { tooltip.style.display='none'; }
+
+// ── GEMINI AI ─────────────────────────────────────────────────
+async function getAI(members, matrix, days, dStr) {
+  // 🔑 REPLACE THIS WITH YOUR REAL GEMINI API KEY
+  const GEMINI_KEY = 'YOUR_GEMINI_KEY';
+
+  const collisions = [];
+  members.forEach((m,mi) => {
+    matrix[mi].forEach(cell => {
+      if(cell.isCollision) collisions.push({
+        member: m.name,
+        date: dStr(cell.day),
+        tasks: cell.nearDl.map(t=>t.name),
+        load: cell.score.toFixed(1)
+      });
+    });
+  });
+
+  const workloads = members.map(m => ({
+    member: m.name,
+    capacity: m.capacity,
+    effort: m.tasks.reduce((s,t)=>s+effort(t.difficulty,t.type),0).toFixed(1),
+    tasks: m.tasks.map(t=>`${t.name} (${t.difficulty} ${t.type}, due ${t.deadline})`)
+  }));
+
+  const prompt = `You are a student team advisor. Give specific, actionable recommendations based on this data.
+
+Collision zones: ${JSON.stringify(collisions)}
+Workloads: ${JSON.stringify(workloads)}
+
+Rules:
+- Max 5 recommendations
+- Each under 25 words
+- Name the person and task specifically
+- Suggest: reschedule, delegate, drop, or chunk the task
+- Format exactly as: PERSON | DATE | suggestion
+- No generic advice`;
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_KEY}`,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ contents:[{ parts:[{ text:prompt }] }] }) }
+    );
+    const json = await res.json();
+    const text = json.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const icons = ['⚡','🔁','📌','💡','🎯'];
+    const lines = text.split('\n').filter(l=>l.trim()).slice(0,5);
+    if(!lines.length) throw new Error('empty');
+    document.getElementById('ai-recs').innerHTML = lines.map((line,i) => {
+      const parts = line.split('|');
+      const person = parts[0]?.trim()||'';
+      const date   = parts[1]?.trim()||'';
+      const rec    = parts[2]?.trim()||line;
+      return `<div class="rec-item">
+        <div class="rec-icon">${icons[i%icons.length]}</div>
+        <div>
+          <div class="rec-person">${person}${date?' · '+date:''}</div>
+          <div class="rec-text">${rec}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(err) {
+    // Fallback if no API key yet
+    document.getElementById('ai-recs').innerHTML = `
+      <div class="rec-item">
+        <div class="rec-icon">⚡</div>
+        <div><div class="rec-person">ACTION NEEDED</div>
+        <div class="rec-text">Move one task from a collision zone 2 days earlier to eliminate the clash.</div></div>
+      </div>
+      <div class="rec-item">
+        <div class="rec-icon">💡</div>
+        <div><div class="rec-person">TIP</div>
+        <div class="rec-text">Break Extreme difficulty tasks into daily chunks to reduce peak load score.</div></div>
+      </div>
+      <div class="rec-item">
+        <div class="rec-icon">🎯</div>
+        <div><div class="rec-person">BALANCE</div>
+        <div class="rec-text">The member with the lowest workload bar can absorb one task from an overloaded teammate.</div></div>
+      </div>`;
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+addMember(); addMember();
+</script>
+</body>
+</html>
